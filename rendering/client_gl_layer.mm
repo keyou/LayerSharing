@@ -1,51 +1,43 @@
-#define GL_SILENCE_DEPRECATION
-
 #import "client_gl_layer.h"
 
-#import <OpenGL/glu.h>
 
 @implementation ClientGlLayer
-  GLfloat phi_;
-  GLfloat theta_;
 
-- (id)init {
-    if (self = [super init]) {
-       phi_ = 0;
-       theta_ = 0;
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _hue = 0.0; // 初始色相
+        [self startColorChange];
     }
     return self;
 }
 
-- (void)drawInCGLContext:(CGLContextObj)glContext
-    pixelFormat:(CGLPixelFormatObj)pixelFormat
-    forLayerTime:(CFTimeInterval)timeInterval
-    displayTime:(const CVTimeStamp *)timeStamp {
-      GLfloat grey = 0.05f;
-      glClearColor(grey, grey, grey, 1);
-      glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
-      glMatrixMode(GL_PROJECTION);
-      glLoadIdentity();
-      gluPerspective(45, 1, 0.1, 1000);
-
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();
-      glTranslatef(0, 0, -10);
-
-      phi_ += 1;
-      theta_ += 2;
-
-      glRotatef(phi_, 1, 0, 0);
-      glRotatef(theta_, 0, 1, 0);
-
-      glLineWidth(4);
-      glBegin(GL_LINES);
-      glColor3f(1, 0, 0); glVertex3f(0, 0, 0); glVertex3f(1, 0, 0);
-      glColor3f(0, 1, 0); glVertex3f(0, 0, 0); glVertex3f(0, 1, 0);
-      glColor3f(0, 0, 1); glVertex3f(0, 0, 0); glVertex3f(0, 0, 1);
-      glEnd();
-
-      glColor3f(0, 0, 0);
+- (void)drawInContext:(CGContextRef)ctx {
+    // 将色相转换为颜色
+    NSColor *color = [NSColor colorWithHue:self.hue saturation:1.0 brightness:1.0 alpha:1.0];
+    
+    // 设置填充颜色
+    CGContextSetFillColorWithColor(ctx, [color CGColor]);
+    
+    // 填充整个图层的区域
+    CGContextFillRect(ctx, self.bounds);
 }
 
+- (void)startColorChange {
+    // 使用定时器每隔0.1秒更新色相
+    [NSTimer scheduledTimerWithTimeInterval:0.1
+                                     target:self
+                                   selector:@selector(updateColor)
+                                   userInfo:nil
+                                    repeats:YES];
+}
+
+- (void)updateColor {
+    // 更新色相并重绘
+    self.hue += 0.01; // 增加色相
+    if (self.hue > 1.0) {
+        self.hue = 0.0; // 重置色相
+    }
+    [self setNeedsDisplay]; // 触发重绘
+}
 @end

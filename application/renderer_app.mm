@@ -24,7 +24,7 @@ void RendererApp::initLayer() {
     ClientGlLayer *gl_layer = [[ClientGlLayer alloc] init];
     [gl_layer setBackgroundColor:CGColorCreateGenericRGB(0, 1, 0, 1)];
     [gl_layer setBounds:CGRectMake(0, 0, 480, 480)];
-    [gl_layer setAsynchronous:YES];
+    // [gl_layer setAsynchronous:YES];
     exportLayer(gl_layer);
 }
 
